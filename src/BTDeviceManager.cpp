@@ -20,6 +20,7 @@ Timer<> BTDeviceManager::scanTimer = timer_create_default();
 Timer<> BTDeviceManager::connectTimer = timer_create_default();
 String BTDeviceManager::statusMessage = "";
 uint16_t BTDeviceManager::fecMaximumResistance = 0;
+BTAdvertisedDeviceCallbacks BTDeviceManager::bTAdvertisedDeviceCallbacks;
 
 class BTDeviceServiceManagerCallbacks : public ServiceManagerCallbacks {
   void onCharacteristicSubscriptionChanged(Characteristic* characteristic, bool removed) {
@@ -61,7 +62,7 @@ std::vector<NimBLEAdvertisedDevice>* BTDeviceManager::getScannedDevices() {
 
 bool BTDeviceManager::start() {
   if (!started) {
-    scannedDevices.clear();
+    std::vector<NimBLEAdvertisedDevice>().swap(scannedDevices);
     if (serviceManager == nullptr) {
       return false;
     }
@@ -252,12 +253,12 @@ bool BTDeviceManager::doScan(void* argument) {
           connected = false;
         }
       }
-      nimBLEScanner->setAdvertisedDeviceCallbacks(new BTAdvertisedDeviceCallbacks(), false);
+      nimBLEScanner->setAdvertisedDeviceCallbacks(&BTDeviceManager::bTAdvertisedDeviceCallbacks, false);
       nimBLEScanner->setActiveScan(true);
       nimBLEScanner->setInterval(97);
       nimBLEScanner->setWindow(37);
       nimBLEScanner->setMaxResults(0);
-      scannedDevices.clear();
+      std::vector<NimBLEAdvertisedDevice>().swap(scannedDevices);
       if (nimBLEScanner->start(0, BTDeviceManager::onScanEnd, false)) {
         statusMessage = "Scanning...";
         log_i("BLE scan started successfully");
@@ -276,7 +277,7 @@ void BTDeviceManager::onScanEnd(NimBLEScanResults scanResults) {
   log_i("BLE scan finished with %d devices", scannedDevices.size());
   if (scannedDevices.size() <= 0) {
     if (!connected) {
-      startScan();
+      //startScan();
     }
   } else {
     if (!connected) {

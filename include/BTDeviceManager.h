@@ -5,6 +5,7 @@
 #include <NimBLEDevice.h>
 #include <ServiceManager.h>
 #include <arduino-timer.h>
+#include <BTAdvertisedDeviceCallbacks.h>
 
 class BTDeviceManager {
  public:
@@ -45,6 +46,7 @@ class BTDeviceManager {
   static Timer<> scanTimer;
   static Timer<> connectTimer;
   static NimBLEAdvertisedDevice* getRemoteDevice();
+  static BTAdvertisedDeviceCallbacks bTAdvertisedDeviceCallbacks;
   static bool connectRemoteDevice(NimBLEAdvertisedDevice* remoteDevice);
   static void onScanEnd(NimBLEScanResults scanResults);
   static void startScan();
