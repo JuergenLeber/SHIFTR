@@ -59,6 +59,8 @@ class BTDeviceManager {
   static uint8_t getFECChecksum(std::vector<uint8_t>* fecData);
   static String statusMessage;
   static uint16_t fecMaximumResistance;
+  static void clearScannedDevices();
+  static void addScannedDevice(NimBLEAdvertisedDevice device);
 };
 
 #endif

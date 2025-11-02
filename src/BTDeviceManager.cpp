@@ -62,7 +62,7 @@ std::vector<NimBLEAdvertisedDevice>* BTDeviceManager::getScannedDevices() {
 
 bool BTDeviceManager::start() {
   if (!started) {
-    std::vector<NimBLEAdvertisedDevice>().swap(scannedDevices);
+    BTDeviceManager::clearScannedDevices();
     if (serviceManager == nullptr) {
       return false;
     }
@@ -258,7 +258,7 @@ bool BTDeviceManager::doScan(void* argument) {
       nimBLEScanner->setInterval(97);
       nimBLEScanner->setWindow(37);
       nimBLEScanner->setMaxResults(0);
-      std::vector<NimBLEAdvertisedDevice>().swap(scannedDevices);
+      BTDeviceManager::clearScannedDevices();
       if (nimBLEScanner->start(0, BTDeviceManager::onScanEnd, false)) {
         statusMessage = "Scanning...";
         log_i("BLE scan started successfully");
@@ -275,11 +275,7 @@ bool BTDeviceManager::doScan(void* argument) {
 
 void BTDeviceManager::onScanEnd(NimBLEScanResults scanResults) {
   log_i("BLE scan finished with %d devices", scannedDevices.size());
-  if (scannedDevices.size() <= 0) {
-    if (!connected) {
-      //startScan();
-    }
-  } else {
+  if (scannedDevices.size() > 0) {
     if (!connected) {
       connectTimer.every(BLE_CONNECT_INTERVAL, BTDeviceManager::doConnect);
     }
@@ -499,7 +495,6 @@ bool BTDeviceManager::writeFECCapabilitiesRequest() {
   return writeBLECharacteristic(NimBLEUUID(TACX_FEC_PRIMARY_SERVICE_UUID), NimBLEUUID(TACX_FEC_WRITE_CHARACTERISTIC_UUID), &fecData);
 }
 
-
 uint8_t BTDeviceManager::getFECChecksum(std::vector<uint8_t>* fecData) {
   uint8_t checksum = 0;
   if (fecData->size() > 0) {
@@ -515,4 +510,23 @@ uint8_t BTDeviceManager::getFECChecksum(std::vector<uint8_t>* fecData) {
 
 String BTDeviceManager::getStatusMessage() {
   return statusMessage;
+}
+
+void BTDeviceManager::clearScannedDevices() {
+  // Clear and shrink the initial vector, then swap it to free memory
+  scannedDevices.clear();
+  scannedDevices.shrink_to_fit();
+  std::vector<NimBLEAdvertisedDevice>().swap(scannedDevices);
+}
+
+void BTDeviceManager::addScannedDevice(NimBLEAdvertisedDevice device) {
+  std::string address = device.getAddress().toString();
+  for (auto existingDevice : scannedDevices) {
+    if (existingDevice.getAddress().toString() == address) {
+      log_d("Device %s (%s) already in list, skipping", address.c_str(), device.getName().c_str());
+      return;
+    }
+  }
+  log_d("Adding %s (%s) to device list", address.c_str(), device.getName().c_str());
+  scannedDevices.push_back(device);
 }
