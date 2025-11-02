@@ -19,9 +19,9 @@ std::string Utils::getSerialNumberString() {
 }
 
 std::string Utils::getDeviceName() {
-  static char deviceName[strlen(DEVICE_NAME_PREFIX) + 8];
+  static char deviceName[(sizeof(DEVICE_NAME_PREFIX) - 1) + 8];
   sprintf(deviceName, "%s %02X%02X%02X", DEVICE_NAME_PREFIX, (uint8_t)(macAddress >> 24), (uint8_t)(macAddress >> 32), (uint8_t)(macAddress >> 40));
-  deviceName[strlen(DEVICE_NAME_PREFIX) + 7] = 0x00;
+  deviceName[(sizeof(DEVICE_NAME_PREFIX) - 1) + 7] = 0x00;
   std::string returnString = deviceName;
   return returnString;
 }
