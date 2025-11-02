@@ -26,4 +26,8 @@
 #define MANUAL_GEARS {0.75, 0.87, 0.99, 1.11, 1.23, 1.38, 1.53, 1.68, 1.86, 2.04, 2.22, 2.40, 2.61, 2.82, 3.03, 3.24, 3.49, 3.74, 3.99, 4.24, 4.54, 4.84, 5.14, 5.49}
 #define MANUAL_GEAR_DEFAULT 8
 
+#define ANT_SERIAL_PIN_RXD 5
+#define ANT_SERIAL_PIN_TXD 17
+#define ANT_BAUD_RATE 57600
+
 #endif

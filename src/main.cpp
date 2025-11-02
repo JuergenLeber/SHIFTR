@@ -16,6 +16,7 @@
 #include <Version.h>
 #include <WebSocketsServer.h>
 #include <WiFi.h>
+#include <ANTDeviceManager.h>
 
 void networkEvent(WiFiEvent_t event);
 void handleWebServerFile(const String& fileName);
@@ -56,8 +57,15 @@ IotWebConf iotWebConf(Utils::getHostName().c_str(), &dnsServer, &webServer, Util
 ServiceManager serviceManager;
 
 void setup() {
+  sleep(2); // wait for serial monitor
   log_i(DEVICE_NAME_PREFIX " " VERSION " starting...");
   log_i("Device name: %s, host name: %s", Utils::getDeviceName().c_str(), Utils::getFQDN().c_str());
+
+  // initialize ANT device manager
+  if (!ANTDeviceManager::start()) {
+    log_e("ANT device manager initialization failed");
+  }
+  log_i("ANT device manager initialized");
 
   // initialize bluetooth device manager
   BTDeviceManager::setLocalDeviceName(Utils::getDeviceName());
@@ -180,6 +188,7 @@ void setup() {
 }
 
 void loop() {
+  ANTDeviceManager::update();
   BTDeviceManager::update();
   DirConManager::update();
   iotWebConf.doLoop();
