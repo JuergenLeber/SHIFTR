@@ -539,12 +539,9 @@ bool DirConManager::processZwiftSyncRequest(Service *service, Characteristic *ch
           // TODO: [04 22 09 10 8D 01 18 EC 27 20 90 03] 5100 / 400 what are these values?!
           case 0x22:
             if (requestValues.find(0x10) != requestValues.end()) {
-              zwiftGrade = requestValues.at(0x10); 
-              // don't know why but they're using bit 0 for signing...
-              if ((zwiftGrade & 0x01) == 0x01) {
-                zwiftGrade ^= 0x01;
-                zwiftGrade *= -1;
-              }
+              zwiftGrade = requestValues.at(0x10); // ZigZag encoded signed int, thanks to @Berg0162 for the hint
+              // Apply ZigZag decoding to get the original signed value
+              zwiftGrade = (zwiftGrade >> 0x01) ^ -(zwiftGrade & 0x01); 
               smoothedZwiftGrade += zwiftGrade;
               smoothedZwiftGrade = smoothedZwiftGrade / 2;
             }
